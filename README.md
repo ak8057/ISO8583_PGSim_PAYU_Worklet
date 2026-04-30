@@ -1,21 +1,217 @@
-python3 src/main/java/com/payu/pgsim/test_client.py
-./mvnw spring-boot:run
+# ISO8583 PG Simulator
 
-<!-- ./mvnw spring-boot:run -Dspring-boot.run.arguments="--simulator.mode=CLIENT --server.port=8082 --simulator.client.host=127.0.0.1 --simulator.client.port=8080" -->
+Spring Boot + Netty based ISO 8583 simulator with:
+- `SERVER` mode (accepts ISO TCP traffic)
+- `CLIENT` mode (sends ISO TCP traffic to server instance)
+- MTI profile/rule/scenario driven behavior
+- Optional NMM lifecycle (LOGON/ECHO/LOGOFF)
 
-<!-- ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --simulator.mode=SERVER --simulator.instance.role=SERVER --simulator.mode.switch-enabled=false --simulator.tcp.port=8080"
+## Prerequisites
 
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082 --simulator.mode=CLIENT --simulator.instance.role=CLIENT --simulator.mode.switch-enabled=false --simulator.client.host=127.0.0.1 --simulator.client.port=8080"
+For Docker setup:
+- Docker Desktop (Mac/Windows) or Docker Engine (Linux)
+- Docker Compose plugin (`docker compose`)
 
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082 --simulator.mode=CLIENT --pgsim.nmm.enabled=true --simulator.client.host=127.0.0.1 --simulator.client.port=8080 --simulator.remote.server.host=127.0.0.1 --simulator.remote.server.port=8081" -->
+For local Maven setup:
+- Java 17+
+- Maven wrapper is included (`./mvnw`)
 
-cd /Users/abhaykumar/codeit/pgsim_ISO8583-mainV3 && ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --simulator.mode=SERVER --simulator.instance.role=SERVER --simulator.mode.switch-enabled=false --simulator.tcp.port=8080"
+## Setup From Scratch (Recommended: Docker Compose)
+
+1) Clone and enter repo
+
+```bash
+git clone <your-repo-url>
+cd pgsim_ISO8583-mainV3
+```
+
+2) Build and start both SERVER and CLIENT
+
+```bash
+docker compose -f docker.compose.yml up --build -d
+```
+
+3) Verify both instances
+
+```bash
+curl -s http://127.0.0.1:8081/actuator/health
+curl -s http://127.0.0.1:8082/actuator/health
+```
+
+4) Open UI
+- Server UI: `http://127.0.0.1:8081/index.html`
+- Client UI: `http://127.0.0.1:8082/index.html`
+
+5) Stop everything
+
+```bash
+docker compose -f docker.compose.yml down
+```
+
+## Setup with Dockerfile (Manual Containers)
+
+1) Build image
+
+```bash
+docker build -t pgsim:latest .
+```
+
+2) Create network
+
+```bash
+docker network create pgsim-net
+```
+
+3) Start SERVER
+
+```bash
+docker run -d --name pgsim-server \
+  --network pgsim-net \
+  -p 8081:8081 \
+  -p 8080:8080 \
+  -e APP_ARGS="--server.port=8081 --simulator.mode=SERVER --simulator.instance.role=SERVER --simulator.mode.switch-enabled=false --simulator.tcp.port=8080" \
+  pgsim:latest
+```
+
+4) Start CLIENT
+
+```bash
+docker run -d --name pgsim-client \
+  --network pgsim-net \
+  -p 8082:8082 \
+  -e APP_ARGS="--server.port=8082 --simulator.mode=CLIENT --simulator.instance.role=CLIENT --simulator.mode.switch-enabled=false --simulator.client.host=pgsim-server --simulator.client.port=8080 --simulator.remote.server.host=pgsim-server --simulator.remote.server.port=8081 --pgsim.nmm.enabled=true --pgsim.nmm.echo-interval-ms=60000 --pgsim.nmm.retry-count=5 --pgsim.nmm.retry-delay-ms=10000 --pgsim.nmm.auto-reconnect=true --pgsim.nmm.response-timeout-ms=10000" \
+  pgsim:latest
+```
+
+5) Verify
+
+```bash
+curl -s http://127.0.0.1:8081/actuator/health
+curl -s http://127.0.0.1:8082/actuator/health
+docker ps
+```
+
+6) Cleanup
+
+```bash
+docker rm -f pgsim-client pgsim-server
+docker network rm pgsim-net
+```
+
+## Run Locally Without Docker (Maven)
+
+Start SERVER:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --simulator.mode=SERVER --simulator.instance.role=SERVER --simulator.mode.switch-enabled=false --simulator.tcp.port=8080"
+```
+
+Start CLIENT (second terminal):
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082 --simulator.mode=CLIENT --simulator.instance.role=CLIENT --simulator.mode.switch-enabled=false --simulator.client.host=127.0.0.1 --simulator.client.port=8080 --simulator.remote.server.host=127.0.0.1 --simulator.remote.server.port=8081 --pgsim.nmm.enabled=true --pgsim.nmm.echo-interval-ms=60000 --pgsim.nmm.retry-count=5 --pgsim.nmm.retry-delay-ms=10000 --pgsim.nmm.auto-reconnect=true --pgsim.nmm.response-timeout-ms=10000"
+```
+
+## Quick Functional Check
+
+Send from CLIENT instance:
+
+```bash
+curl -sS -X POST http://127.0.0.1:8082/api/simulator/send \
+  -H "Content-Type: application/json" \
+  -d '{"mti":"0100","fields":{"2":"5123456789012345","3":"000000","4":"000000001000","11":"123456"}}'
+```
+
+Expected:
+- response MTI: `0110`
+- response code `DE39`: `00` (or configured rule code)
+
+## Notes
+
+- `docker.compose.yml` is intentionally named with dot notation; use `-f docker.compose.yml`.
+- Runtime defaults are in `src/main/resources/application.properties`.
+- MTI definitions are in `src/main/resources/message-config.json`.
+
+## Troubleshooting
+
+- Port already in use:
+  - change host port mappings in `docker.compose.yml` or stop existing process
+- Container healthy but no UI:
+  - check logs: `docker logs pgsim-server` / `docker logs pgsim-client`
+- Rule/bitmap changes not visible:
+  - use UI Refresh/Sync in profile/config pages
+  - verify via `GET /api/config/{mti}`
+# ISO8583 PG Simulator
 
 
-cd /Users/abhaykumar/codeit/pgsim_ISO8583-mainV3 && ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8082 --simulator.mode=CLIENT --simulator.instance.role=CLIENT --simulator.mode.switch-enabled=false --simulator.client.host=127.0.0.1 --simulator.client.port=8080 --simulator.remote.server.host=127.0.0.1 --simulator.remote.server.port=8081 --pgsim.nmm.enabled=true --pgsim.nmm.echo-interval-ms=60000 --pgsim.nmm.retry-count=5 --pgsim.nmm.retry-delay-ms=10000 --pgsim.nmm.auto-reconnect=true --pgsim.nmm.response-timeout-ms=10000"
+🟢 Quick Start (1 command)
+git clone <your-repo-url>
+cd <repo>
+docker compose up --build
 
+Open:
 
-## Run as separate SERVER and CLIENT processes
+Server → http://localhost:8081
+Client → http://localhost:8082
+
+## Quick Start with Docker (Recommended)
+
+This project can be built and run directly from the included `Dockerfile` (no local Java/Maven install required).
+
+### 1) Build the image
+
+```bash
+docker build -t pgsim:latest .
+```
+
+### 2) Create a Docker network
+
+```bash
+docker network create pgsim-net
+```
+
+### 3) Run SERVER instance
+
+```bash
+docker run -d --name pgsim-server \
+  --network pgsim-net \
+  -p 8081:8081 \
+  -p 8080:8080 \
+  -e APP_ARGS="--server.port=8081 --simulator.mode=SERVER --simulator.instance.role=SERVER --simulator.mode.switch-enabled=false --simulator.tcp.port=8080" \
+  pgsim:latest
+```
+
+### 4) Run CLIENT instance
+
+```bash
+docker run -d --name pgsim-client \
+  --network pgsim-net \
+  -p 8082:8082 \
+  -e APP_ARGS="--server.port=8082 --simulator.mode=CLIENT --simulator.instance.role=CLIENT --simulator.mode.switch-enabled=false --simulator.client.host=pgsim-server --simulator.client.port=8080 --simulator.remote.server.host=pgsim-server --simulator.remote.server.port=8081 --pgsim.nmm.enabled=true --pgsim.nmm.echo-interval-ms=60000 --pgsim.nmm.retry-count=5 --pgsim.nmm.retry-delay-ms=10000 --pgsim.nmm.auto-reconnect=true --pgsim.nmm.response-timeout-ms=10000" \
+  pgsim:latest
+```
+
+### 5) Verify
+
+```bash
+curl -s http://127.0.0.1:8081/actuator/health
+curl -s http://127.0.0.1:8082/actuator/health
+```
+
+Open UIs:
+- Server UI: `http://127.0.0.1:8081/index.html`
+- Client UI: `http://127.0.0.1:8082/index.html`
+
+### 6) Stop and clean up
+
+```bash
+docker rm -f pgsim-client pgsim-server
+docker network rm pgsim-net
+```
+
+---
+
+## Run as separate SERVER and CLIENT processes (Local Maven)
 
 Use the same codebase and start two different processes with startup configuration.
 

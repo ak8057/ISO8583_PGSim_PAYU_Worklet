@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  server:
+    build: .
+    container_name: pgsim-server
+    ports:
+      - "8081:8081"
+      - "8080:8080"
+    environment:
+      APP_ARGS: >
+        --server.port=8081
+        --simulator.mode=SERVER
+        --simulator.instance.role=SERVER
+        --simulator.mode.switch-enabled=false
+        --simulator.tcp.port=8080
+
+  client:
+    build: .
+    container_name: pgsim-client
+    depends_on:
+      - server
+    ports:
+      - "8082:8082"
+    environment:
+      APP_ARGS: >
+        --server.port=8082
+        --simulator.mode=CLIENT
+        --simulator.instance.role=CLIENT
+        --simulator.client.host=server
+        --simulator.client.port=8080
+        --simulator.remote.server.host=server
+        --simulator.remote.server.port=8081
+        --pgsim.nmm.enabled=true
+        --pgsim.nmm.echo-interval-ms=60000
+        --pgsim.nmm.auto-reconnect=true

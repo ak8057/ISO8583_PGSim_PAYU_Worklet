@@ -1,0 +1,10 @@
+target
+.git
+.idea
+.vscode
+logs
+*.log
+server.log
+client.log
+README.md
+PROJECT_CONTEXT.md
