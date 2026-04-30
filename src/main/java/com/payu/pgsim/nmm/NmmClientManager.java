@@ -7,13 +7,16 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,12 +48,16 @@ public class NmmClientManager {
 
     // ObjectProvider to break the circular TcpClient ↔ NmmClientManager dep
     private final ObjectProvider<com.payu.pgsim.tcp.TcpClient> tcpClientProvider;
+    @Value("${pgsim.connection.timeout:30000}")
+    private long connectionTimeoutMs;
 
     private final AtomicReference<NmmSessionState> state =
             new AtomicReference<>(NmmSessionState.DISCONNECTED);
 
     private volatile Channel            currentChannel;
     private volatile ScheduledFuture<?> echoFuture;
+    private final AtomicInteger reconnectAttempt = new AtomicInteger(0);
+    private final AtomicBoolean reconnectScheduled = new AtomicBoolean(false);
 
     private final ScheduledExecutorService executor =
             Executors.newSingleThreadScheduledExecutor(r -> {
@@ -69,6 +76,9 @@ public class NmmClientManager {
         if (!properties.isEnabled()) return;
         this.currentChannel = channel;
         state.set(NmmSessionState.CONNECTING);
+        reconnectAttempt.set(0);
+        reconnectScheduled.set(false);
+        logGuardrailIfMisconfigured();
         executor.submit(this::performLogon);
     }
 
@@ -152,12 +162,13 @@ public class NmmClientManager {
 
     private void startEchoSchedule() {
         cancelEchoSchedule();
+        long echoIntervalMs = resolveEffectiveEchoIntervalMs();
         echoFuture = executor.scheduleAtFixedRate(
                 this::performEcho,
-                properties.getEchoIntervalMs(),
-                properties.getEchoIntervalMs(),
+                echoIntervalMs,
+                echoIntervalMs,
                 TimeUnit.MILLISECONDS);
-        log.info("[CLIENT] ECHO scheduler started (every {} ms)", properties.getEchoIntervalMs());
+        log.info("[CLIENT] ECHO scheduler started (every {} ms)", echoIntervalMs);
     }
 
     private void cancelEchoSchedule() {
@@ -204,7 +215,18 @@ public class NmmClientManager {
     // ── Reconnect logic ──────────────────────────────────────────────────────
 
     private void scheduleReconnect() {
-        executor.schedule(this::triggerReconnect, properties.getRetryDelayMs(), TimeUnit.MILLISECONDS);
+        if (!reconnectScheduled.compareAndSet(false, true)) {
+            log.debug("[CLIENT] Reconnect already scheduled; skipping duplicate request");
+            return;
+        }
+        long delayMs = computeReconnectDelayMs();
+        executor.schedule(() -> {
+            try {
+                triggerReconnect();
+            } finally {
+                reconnectScheduled.set(false);
+            }
+        }, delayMs, TimeUnit.MILLISECONDS);
     }
 
     private void triggerReconnect() {
@@ -255,5 +277,50 @@ public class NmmClientManager {
     /** Externally readable state (e.g. for health/status endpoints). */
     public NmmSessionState getSessionState() {
         return state.get();
+    }
+
+    private long resolveEffectiveEchoIntervalMs() {
+        long configured = Math.max(1000L, properties.getEchoIntervalMs());
+        if (connectionTimeoutMs <= 0) {
+            return configured;
+        }
+        long maxSafe = Math.max(1000L, connectionTimeoutMs - 1000L);
+        return Math.min(configured, maxSafe);
+    }
+
+    private void logGuardrailIfMisconfigured() {
+        if (connectionTimeoutMs <= 0) {
+            return;
+        }
+        if (properties.getEchoIntervalMs() >= connectionTimeoutMs) {
+            log.warn(
+                    "[CLIENT] NMM timing guardrail applied: echoIntervalMs={} should be lower than connection timeout {}. Using effective interval {} ms.",
+                    properties.getEchoIntervalMs(),
+                    connectionTimeoutMs,
+                    resolveEffectiveEchoIntervalMs());
+        }
+    }
+
+    private long computeReconnectDelayMs() {
+        int attempt = reconnectAttempt.incrementAndGet();
+        long base = Math.max(500L, properties.getRetryDelayMs());
+        long maxDelay = Math.max(base, properties.getMaxReconnectDelayMs());
+        long exp = base;
+        for (int i = 1; i < attempt; i++) {
+            if (exp >= maxDelay / 2L) {
+                exp = maxDelay;
+                break;
+            }
+            exp *= 2L;
+        }
+        long bounded = Math.min(exp, maxDelay);
+        int jitterPercent = Math.max(0, Math.min(100, properties.getReconnectJitterPercent()));
+        if (jitterPercent == 0) {
+            return bounded;
+        }
+        long jitterWindow = Math.max(1L, bounded * jitterPercent / 100L);
+        long jitter = ThreadLocalRandom.current().nextLong(-jitterWindow, jitterWindow + 1L);
+        long finalDelay = bounded + jitter;
+        return Math.max(250L, finalDelay);
     }
 }

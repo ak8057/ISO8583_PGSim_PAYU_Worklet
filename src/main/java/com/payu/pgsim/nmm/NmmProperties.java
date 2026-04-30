@@ -32,4 +32,10 @@ public class NmmProperties {
 
     /** Timeout (ms) to wait for a single NMM response before retrying. */
     private long responseTimeoutMs = 10000;
+
+    /** Upper bound for reconnect backoff delay (ms). */
+    private long maxReconnectDelayMs = 120000;
+
+    /** Random jitter percentage applied to reconnect delay (0-100). */
+    private int reconnectJitterPercent = 20;
 }

@@ -324,11 +324,26 @@ async function loadConfig() {
 
 function loadBitmapState(config) {
   if (!config.bitmap) return;
+  const requestBitsRaw = config.bitmap.requestBits || [];
+  const responseBitsRaw = config.bitmap.responseBits || [];
+  const mandatoryBits = config.bitmap.mandatoryBits || [];
+  const optionalBits = config.bitmap.optionalBits || [];
+
+  const requestBits =
+    requestBitsRaw.length > 0
+      ? requestBitsRaw
+      : [...new Set([...(mandatoryBits || []), ...(optionalBits || [])])];
+
+  let responseBits = responseBitsRaw;
+  if ((!responseBits || responseBits.length === 0) && Array.isArray(config.responseFields)) {
+    responseBits = [...new Set(config.responseFields.map((f) => f?.field).filter((n) => Number.isInteger(n)))];
+  }
+
   for (let i = 2; i <= 128; i++) {
     const req = document.getElementById("reqBit" + i);
     const res = document.getElementById("resBit" + i);
-    if (req) req.checked = (config.bitmap.requestBits || []).includes(i);
-    if (res) res.checked = (config.bitmap.responseBits || []).includes(i);
+    if (req) req.checked = requestBits.includes(i);
+    if (res) res.checked = responseBits.includes(i);
   }
   const secBit = document.getElementById("secondaryBitmap");
   if (secBit) secBit.checked = !!config.bitmap.secondaryBitmap;
@@ -1271,6 +1286,16 @@ async function loadLogs() {
 let _currentProfileData = null;       // profile currently shown in detail view
 let _profileBuilderClientFields = []; // field list from /api/profiles/client-fields
 
+async function fetchJsonNoCache(url, options = {}) {
+  const sep = url.includes("?") ? "&" : "?";
+  const cacheBustedUrl = `${url}${sep}_ts=${Date.now()}`;
+  const res = await fetch(cacheBustedUrl, {
+    cache: "no-store",
+    ...options,
+  });
+  return res;
+}
+
 async function syncProfilesFromServer() {
   const remoteUrl = document.getElementById("remoteServerUrl").value.trim();
   if (!remoteUrl) {
@@ -1288,7 +1313,7 @@ async function syncProfilesFromServer() {
     const base = remoteUrl.endsWith('/') ? remoteUrl.slice(0, -1) : remoteUrl;
     
     // Fetch profiles from remote server
-    const res = await fetch(`${base}/api/profiles`);
+    const res = await fetchJsonNoCache(`${base}/api/profiles`);
     if (!res.ok) throw new Error("HTTP " + res.status + " from remote server");
     const profiles = await res.json();
     
@@ -1304,7 +1329,12 @@ async function syncProfilesFromServer() {
     }
     
     showToast(`Successfully synced ${successCount} profiles from server`, "success");
-    loadProfiles();
+    await loadProfiles();
+
+    // Keep detail pane in sync if user already opened one profile.
+    if (_currentProfileData && _currentProfileData.requestMti) {
+      await showProfileDetail(_currentProfileData.requestMti);
+    }
   } catch (e) {
     showToast("Failed to sync profiles: " + e.message, "danger");
   } finally {
@@ -1319,13 +1349,18 @@ async function loadProfiles() {
   grid.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:16px">Loading…</div>';
 
   try {
-    const res = await fetch("/api/profiles");
+    const res = await fetchJsonNoCache("/api/profiles");
     if (!res.ok) throw new Error("HTTP " + res.status);
     const profiles = await res.json();
 
     grid.innerHTML = "";
     if (!Array.isArray(profiles) || profiles.length === 0) {
       grid.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:16px">No profiles configured yet.</div>';
+      if (_currentProfileData) {
+        _currentProfileData = null;
+        const section = document.getElementById("profileDetailSection");
+        if (section) section.style.display = "none";
+      }
       return;
     }
 
@@ -1400,6 +1435,11 @@ async function loadProfiles() {
         builderSelect.appendChild(opt);
       }
     });
+
+    // Auto-refresh opened profile detail after list refresh.
+    if (_currentProfileData && _currentProfileData.requestMti) {
+      await showProfileDetail(_currentProfileData.requestMti);
+    }
   } catch(e) {
     grid.innerHTML = `<div style="color:var(--danger);padding:16px">Failed to load profiles: ${e.message}</div>`;
     showToast("Failed to load profiles", "danger");
@@ -1411,7 +1451,7 @@ async function showProfileDetail(profileOrMti) {
   
   if (typeof profileOrMti === 'string') {
     try {
-      const res = await fetch(`/api/config/profile/${profileOrMti}`);
+      const res = await fetchJsonNoCache(`/api/config/profile/${profileOrMti}`);
       if (res.ok) {
         const cfg = await res.json();
         console.log("Raw config from server:", cfg);

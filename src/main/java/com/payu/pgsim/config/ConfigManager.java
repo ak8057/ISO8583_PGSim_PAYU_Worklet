@@ -21,12 +21,14 @@ import com.payu.pgsim.model.ImportResult;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
@@ -265,14 +267,50 @@ public class ConfigManager {
 }
 
     public void updateConfig(MessageTypeConfig config) {
+        MessageTypeConfig existing = config != null ? configs.get(config.getMti()) : null;
+        MessageTypeConfig merged = mergeWithExisting(existing, config);
 
-        normalizeForRuntime(config);
-        configValidator.validate(config);
-        configs.put(config.getMti(), config);
+        normalizeForRuntime(merged);
+        configValidator.validate(merged);
+        configs.put(merged.getMti(), merged);
 
-        log.info("Runtime config updated for MTI: {}", config.getMti());
+        log.info("Runtime config updated for MTI: {}", merged.getMti());
         bumpAndPersist();
 
+    }
+
+    private MessageTypeConfig mergeWithExisting(MessageTypeConfig existing, MessageTypeConfig incoming) {
+        if (incoming == null) {
+            throw new RuntimeException("MTI configuration body is required");
+        }
+        if (existing == null) {
+            return incoming;
+        }
+
+        // Keep existing values when the incoming payload omits or sends empty sections.
+        incoming.setResponseMti(firstNonBlank(incoming.getResponseMti(), existing.getResponseMti()));
+        incoming.setDescription(firstNonBlank(incoming.getDescription(), existing.getDescription()));
+        incoming.setBitmap(firstNonNull(incoming.getBitmap(), existing::getBitmap));
+        incoming.setRequestFields(firstNonEmptyList(incoming.getRequestFields(), existing::getRequestFields));
+        incoming.setResponseFields(firstNonEmptyList(incoming.getResponseFields(), existing::getResponseFields));
+        incoming.setRules(firstNonEmptyList(incoming.getRules(), existing::getRules));
+        incoming.setFieldConfigs(firstNonEmptyList(incoming.getFieldConfigs(), existing::getFieldConfigs));
+        incoming.setRequestBits(firstNonEmptyList(incoming.getRequestBits(), existing::getRequestBits));
+        incoming.setDefaultFields(firstNonNull(incoming.getDefaultFields(), existing::getDefaultFields));
+        incoming.setScenario(firstNonNull(incoming.getScenario(), existing::getScenario));
+        return incoming;
+    }
+
+    private String firstNonBlank(String value, String fallback) {
+        return (value != null && !value.isBlank()) ? value : fallback;
+    }
+
+    private <T> T firstNonNull(T value, Supplier<T> fallback) {
+        return value != null ? value : fallback.get();
+    }
+
+    private <T> List<T> firstNonEmptyList(List<T> value, Supplier<List<T>> fallback) {
+        return (value != null && !value.isEmpty()) ? value : fallback.get();
     }
 
     public void addRule(String mti, ResponseRule rule) {
@@ -367,7 +405,43 @@ public class ConfigManager {
             rule.setRuleId(UUID.randomUUID().toString());
         }
 
+        normalizeRuleShape(rule);
+
         rulesStore.add(rule);
+    }
+
+    private void normalizeRuleShape(ResponseRule rule) {
+        if (rule == null) {
+            return;
+        }
+
+        // Legacy shape -> canonical multi-condition shape
+        if ((rule.getConditions() == null || rule.getConditions().isEmpty())
+                && rule.getField() > 0
+                && rule.getOperator() != null
+                && !rule.getOperator().isBlank()) {
+            com.payu.pgsim.model.Condition c = new com.payu.pgsim.model.Condition();
+            c.setField(rule.getField());
+            c.setOperator(rule.getOperator());
+            c.setValue(rule.getValue());
+            rule.setConditions(Collections.singletonList(c));
+        }
+
+        // Canonical shape -> keep legacy fields populated for compatibility consumers
+        if (rule.getConditions() != null && !rule.getConditions().isEmpty()) {
+            com.payu.pgsim.model.Condition first = rule.getConditions().get(0);
+            if (first != null) {
+                if (rule.getField() <= 0) {
+                    rule.setField(first.getField());
+                }
+                if (rule.getOperator() == null || rule.getOperator().isBlank()) {
+                    rule.setOperator(first.getOperator());
+                }
+                if (rule.getValue() == null) {
+                    rule.setValue(first.getValue());
+                }
+            }
+        }
     }
 
     public void updateScenario(String mti, ScenarioRule scenario) {

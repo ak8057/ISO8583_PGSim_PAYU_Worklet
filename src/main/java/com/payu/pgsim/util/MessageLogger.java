@@ -26,7 +26,19 @@ public class MessageLogger {
                                      ISOMsg response,
                                      long processingTime,
                                      String connectionId) {
+        MessageLog incoming = buildIncomingLog(request, response, processingTime, connectionId);
+        MessageLog outgoing = buildOutgoingLog(request, response, processingTime, connectionId);
+        logStore.add(incoming);
+        logStore.add(outgoing);
+        printLog(incoming);
+        printLog(outgoing);
+        return outgoing;
+    }
 
+    private MessageLog buildIncomingLog(ISOMsg request,
+                                        ISOMsg response,
+                                        long processingTime,
+                                        String connectionId) {
         MessageLog log = new MessageLog();
 
         log.setTimestamp(LocalDateTime.now());
@@ -59,9 +71,47 @@ public class MessageLogger {
                 log.setResponseCode("ERR");
             }
         }
-        logStore.add(log);
-        printLog(log);
+        return log;
+    }
 
+    private MessageLog buildOutgoingLog(ISOMsg request,
+                                        ISOMsg response,
+                                        long processingTime,
+                                        String connectionId) {
+        MessageLog log = new MessageLog();
+
+        log.setTimestamp(LocalDateTime.now());
+        log.setConnectionId(connectionId);
+        log.setProcessingTime(processingTime);
+
+        try {
+            log.setMti(response != null ? response.getMTI() : request.getMTI());
+        } catch (Exception e) {
+            log.setMti("UNKNOWN");
+        }
+
+        try {
+            if (response != null) {
+                byte[] responseBytes = response.pack();
+                log.setDirection(MessageDirection.OUTGOING);
+                log.setMode(SimulatorMode.SERVER);
+                log.setRawMessage(responseBytes);
+                log.setHexMessage(HexUtil.toHex(responseBytes));
+            }
+        } catch (Exception e) {
+            MessageLogger.log.warn("Unable to build outgoing HEX message for transaction log", e);
+        }
+
+        log.setRequestFields(extractFields(request));
+        log.setResponseFields(extractFields(response));
+
+        if (response != null && response.hasField(39)) {
+            try {
+                log.setResponseCode(response.getString(39));
+            } catch (Exception e) {
+                log.setResponseCode("ERR");
+            }
+        }
         return log;
     }
 
