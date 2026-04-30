@@ -4,7 +4,7 @@
 
 <!-- Project Logo / Hero Image -->
 <!-- Replace this placeholder with your hosted logo/banner URL -->
-<img src="https://via.placeholder.com/900x240.png?text=ISO8583+PG+Simulator" alt="ISO8583 PG Simulator Banner" width="900" />
+<img width="500" height="95" alt="Screenshot_2026-04-30_at_7 08 37_PM-removebg-preview" src="https://github.com/user-attachments/assets/b659b3e3-fbcb-4d16-b36e-5a159f9abb58" />
 
 <img src="https://readme-typing-svg.demolab.com?font=Syne&weight=700&size=18&pause=1200&color=38BDF8&center=true&vCenter=true&width=900&lines=Build+realistic+ISO8583+payment+flows.;Run+SERVER+and+CLIENT+simulators+independently.;Profile-driven+MTI+request%2Fresponse+configuration.;NMM+LOGON%2FECHO%2FLOGOFF+with+retry+and+auto-reconnect." />
 
@@ -20,26 +20,140 @@
 
 ---
 
-## Screenshots / GIFs
+## Screenshots 
 
 > Add your UI screenshots and demo GIFs here.  
 > You can upload images to GitHub issues/PR comments and paste the generated URLs, or keep assets in a local `assets/` folder.
 
 ### Dashboard Preview
 
-![Dashboard Placeholder](https://via.placeholder.com/1200x650.png?text=Dashboard+Screenshot+Placeholder)
+<img width="1710" height="951" alt="image" src="https://github.com/user-attachments/assets/0376219d-222c-4e38-88d3-bb8bc61ff6a2" />
 
 ### MTI / Bitmap Configuration
 
-![MTI Config Placeholder](https://via.placeholder.com/1200x650.png?text=MTI+and+Bitmap+Config+Placeholder)
+<img width="1710" height="951" alt="image" src="https://github.com/user-attachments/assets/ed5e11cb-2314-416b-81c2-36a59364e707" />
 
 ### Rule Engine / Scenario Demo
 
-![Rule Engine Placeholder](https://via.placeholder.com/1200x650.png?text=Rule+Engine+and+Scenario+Placeholder)
+<img width="1710" height="949" alt="image" src="https://github.com/user-attachments/assets/96a81905-2915-4988-b55b-fc442b9cd6e9" />
 
-### End-to-End Flow GIF
 
-![Demo GIF Placeholder](https://via.placeholder.com/1200x650.png?text=End-to-End+Demo+GIF+Placeholder)
+### End-to-End Flow
+```mermaid
+flowchart TB
+
+  %% =========================
+  %% UI
+  %% =========================
+  subgraph UI["Browser"]
+    A["Select MTI / Edit Fields / Send"]
+  end
+
+  %% =========================
+  %% CLIENT
+  %% =========================
+  subgraph C["CLIENT app"]
+    R1["REST API"]
+    S1["SimulatorService"]
+
+    %% Build Flow
+    B1["OutgoingMessageBuilder"]
+    FVR1["FieldValueResolver"]
+    CFG1["Config (Request Fields)"]
+
+    %% TCP
+    T1["TcpClient"]
+    P1["Netty TCP Pipeline"]
+    RH["ResponseHandler"]
+
+    %% NMM
+    N1["NMM (LOGON / ECHO / LOGOFF)"]
+
+    %% Logs
+    L1[("Client Logs")]
+
+    R1 --> S1
+    S1 --> B1
+    B1 --> CFG1
+    B1 --> FVR1
+    S1 --> T1
+    T1 --> P1 --> RH
+    T1 --> N1
+    S1 --> L1
+    N1 -->|"Background TCP"| T1
+  end
+
+  %% =========================
+  %% NETWORK
+  %% =========================
+  subgraph NW["Network"]
+    TCP["ISO8583 over TCP"]
+  end
+
+  %% =========================
+  %% SERVER
+  %% =========================
+  subgraph S["SERVER app"]
+
+    %% TCP Entry
+    T2["TcpServer"]
+    TH["TcpServerHandler"]
+
+    %% Core Processing
+    MH["MessageHandler"]
+
+    %% Validation Layer
+    PAR["ISO Parser"]
+    BV["BitmapValidator"]
+    FV["FieldValidator"]
+
+    %% Config + Logic
+    CFG2["ConfigManager (Profiles)"]
+    RE["RuleEngine"]
+    SE["ScenarioEngine"]
+
+    %% Response
+    RG["ResponseGenerator"]
+
+    %% NMM
+    NMM_S["NMM Observer"]
+
+    %% Logs
+    L2[("Server Logs")]
+    L3[("Transaction Logs")]
+
+    T2 --> TH --> MH
+
+    MH --> PAR
+    MH --> BV
+    MH --> FV
+    MH --> CFG2
+    MH --> RE
+    MH --> SE
+    MH --> RG
+
+    RG --> T2
+
+    TH --> NMM_S
+
+    MH --> L2
+    L2 --> L3
+  end
+
+  %% =========================
+  %% FLOWS
+  %% =========================
+
+  A --> R1
+  P1 <--> TCP
+  TCP <--> T2
+
+  RH --> S1
+  S1 -->|"Return JSON"| A
+
+  %% Fallback config
+  B1 -.->|"Fallback: local config"| CFG2
+```
 
 ---
 
