@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ISO 8583 Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- ═══════════════════════════════════════════════════════
+       TOPBAR
+  ═══════════════════════════════════════════════════════ -->
+    <header class="topbar">
+
+      <a class="topbar-logo" href="#">
+        <div class="topbar-logo-icon">8583</div>
+        <span class="topbar-logo-text">ISO<span>Sim</span></span>
+      </a>
+
+      <div class="topbar-divider"></div>
+
+      <div class="topbar-breadcrumb">
+        <span>Simulator</span>
+        <span style="color:var(--border-bright)">›</span>
+        <span class="current" id="breadcrumb-current">Dashboard</span>
+      </div>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="topbar-clock" id="topbar-clock">—</div>
+
+      <div class="topbar-role-pill server" id="instanceRolePill">
+        <span class="dot"></span>
+        <span id="instanceRoleText">SERVER</span>
+      </div>
+
+      <div class="topbar-status-pill" id="systemStatus">
+        <span class="dot"></span>
+        <span id="systemStatusText">ONLINE</span>
+      </div>
+
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════════════ -->
+    <nav class="sidebar">
+
+      <span class="sidebar-section-label">Overview</span>
+      <ul class="sidebar-nav">
+        <li>
+          <button data-nav="page-dashboard" onclick="navigateTo('page-dashboard')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </button>
+        </li>
+      </ul>
+
+      <span class="sidebar-section-label">Configuration</span>
+      <ul class="sidebar-nav">
+        <li>
+          <button data-nav="page-mti" onclick="navigateTo('page-mti')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4h12M2 8h8M2 12h5" />
+              <circle cx="13" cy="11" r="2.5" />
+              <path d="M13 8.5v0" />
+            </svg>
+            MTI Config
+          </button>
+        </li>
+        <li>
+          <button data-nav="page-bitmap" onclick="navigateTo('page-bitmap')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="4" height="4" rx="0.5" />
+              <rect x="6" y="1" width="4" height="4" rx="0.5" />
+              <rect x="11" y="1" width="4" height="4" rx="0.5" />
+              <rect x="1" y="6" width="4" height="4" rx="0.5" />
+              <rect x="6" y="6" width="4" height="4" rx="0.5" />
+              <rect x="11" y="6" width="4" height="4" rx="0.5" />
+              <rect x="1" y="11" width="4" height="4" rx="0.5" />
+              <rect x="6" y="11" width="4" height="4" rx="0.5" />
+            </svg>
+            Bitmap Editor
+          </button>
+        </li>
+        <li>
+          <button data-nav="page-fields" onclick="navigateTo('page-fields')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 4h14M1 8h14M1 12h10" />
+            </svg>
+            Field Config
+          </button>
+        </li>
+        <li>
+          <button data-nav="page-profiles" onclick="navigateTo('page-profiles')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="14" height="4" rx="1"/>
+              <rect x="1" y="7" width="14" height="4" rx="1"/>
+              <path d="M1 13h6"/>
+              <circle cx="12" cy="13" r="2.5"/>
+              <path d="M12 11v0"/>
+            </svg>
+            MTI Profiles
+          </button>
+        </li>
+      </ul>
+
+      <span class="sidebar-section-label">Behavior</span>
+      <ul class="sidebar-nav">
+        <li>
+          <button data-nav="page-rules" onclick="navigateTo('page-rules')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 2h14v2H1zM3 7h10M5 11h6" />
+            </svg>
+            Rule Engine
+          </button>
+        </li>
+        <li>
+          <button data-nav="page-scenario" onclick="navigateTo('page-scenario')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="8" r="7" />
+              <path d="M8 4v4l3 2" />
+            </svg>
+            Scenario
+          </button>
+        </li>
+      </ul>
+
+      <span class="sidebar-section-label">Testing</span>
+      <ul class="sidebar-nav">
+        <li>
+          <button data-nav="page-simulator" onclick="navigateTo('page-simulator')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3l12 5-12 5V9l8-1-8-1V3z" />
+            </svg>
+            Simulator
+          </button>
+        </li>
+        <li>
+          <button data-nav="page-monitor" onclick="navigateTo('page-monitor')">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="2" width="14" height="10" rx="1" />
+              <path d="M5 14h6M8 12v2" />
+            </svg>
+            Tx Monitor
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        ISO 8583 Simulator<br>
+        <span style="color:var(--accent)">v2.0.0</span> · Fintech Tools
+      </div>
+
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════════════ -->
+    <main class="main-content">
+
+      <!-- ─── DASHBOARD ──────────────────────────────────── -->
+      <section class="page active" id="page-dashboard">
+
+        <div class="page-header">
+          <h1>Dashboard</h1>
+          <p>ISO 8583 Simulator — System overview and active configuration</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+
+          <div class="stat-card accent">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-value" id="stat-message-count">—</div>
+            <div class="stat-sub">Messages processed</div>
+          </div>
+
+          <div class="stat-card info">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 6h16M4 10h16M4 14h8M4 18h4" />
+            </svg>
+            <div class="stat-label">Active MTIs</div>
+            <div class="stat-value" id="stat-mti-count">—</div>
+            <div class="stat-sub">Configured message types</div>
+          </div>
+
+          <div class="stat-card success">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12l3 3 5-5" />
+            </svg>
+            <div class="stat-label">System Status</div>
+            <div class="stat-value" style="font-size:18px;letter-spacing:0.5px">ONLINE</div>
+            <div class="stat-sub">TCP Server · Spring Boot</div>
+          </div>
+
+          <div class="stat-card warn">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            <div class="stat-label">Polling Interval</div>
+            <div class="stat-value" style="font-size:18px">2s</div>
+            <div class="stat-sub">Transaction refresh rate</div>
+          </div>
+
+          <div class="stat-card info" title="ISO 8583 TCP listener (simulator.tcp.port). HTTP UI uses server.port — see docs/BRD-COMPLIANCE.md">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 7h16M4 12h16M4 17h10" />
+            </svg>
+            <div class="stat-label">ISO TCP server port</div>
+            <div class="stat-value mono" id="stat-iso-server-tcp">—</div>
+            <div class="stat-sub">Server bind/listener</div>
+          </div>
+
+          <div class="stat-card info" title="ISO 8583 client target port used when transport mode is CLIENT">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 7h16M4 12h16M4 17h10" />
+            </svg>
+            <div class="stat-label">ISO TCP client port</div>
+            <div class="stat-value mono" id="stat-iso-client-tcp">—</div>
+            <div class="stat-sub">Client target remote</div>
+          </div>
+
+          <div class="stat-card accent" title="Spring HTTP port for dashboard and REST APIs">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12h8M12 8v8" />
+            </svg>
+            <div class="stat-label">HTTP port</div>
+            <div class="stat-value mono" id="stat-http-port">—</div>
+            <div class="stat-sub">UI /api /actuator</div>
+          </div>
+
+          <div class="stat-card warn" title="Configuration version increments on each persisted change">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 4h16v6H4zM4 14h10v6H4zM18 14h2v6h-2z" />
+            </svg>
+            <div class="stat-label">Config version</div>
+            <div class="stat-value mono" id="stat-config-version">—</div>
+            <div class="stat-sub">Runtime MTI set revision</div>
+          </div>
+
+          <div class="stat-card success" title="TR-6: TLS on ISO TCP when keystore configured">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d="M9 11V7a3 3 0 016 0v4" />
+            </svg>
+            <div class="stat-label">ISO TCP TLS</div>
+            <div class="stat-value" style="font-size:16px" id="stat-tls">OFF</div>
+            <div class="stat-sub" id="stat-packagers">Packagers: —</div>
+          </div>
+
+          <div class="stat-card info" title="Deployment role of this frontend/backend instance">
+            <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 6h16M4 12h10M4 18h16" />
+            </svg>
+            <div class="stat-label">Instance role</div>
+            <div class="stat-value mono" id="stat-simulator-mode">—</div>
+            <div class="stat-sub" id="stat-role-sub">SERVER or CLIENT</div>
+            <div style="display:flex;gap:6px;margin-top:8px" id="transportModeControls">
+              <select id="transportModeSelect" style="flex:1;min-width:0">
+                <option value="SERVER">SERVER</option>
+                <option value="CLIENT">CLIENT</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" type="button" onclick="switchTransportMode()">Apply</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+
+          <!-- Active MTIs -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round">
+                  <path d="M1 4h14M1 8h14M1 12h10" />
+                </svg>
+                Active MTI Configurations
+              </span>
+              <button class="btn btn-secondary btn-sm" onclick="navigateTo('page-mti')">
+                Configure
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div id="dashboard-mti-list" style="padding:8px"></div>
+            </div>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round">
+                  <path d="M2 3l12 5-12 5V9l8-1-8-1V3z" />
+                </svg>
+                Recent Transactions
+              </span>
+              <button class="btn btn-secondary btn-sm" onclick="navigateTo('page-monitor')">View All</button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-wrapper" style="border:none;border-radius:0">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>MTI</th>
+                      <th>RC</th>
+                      <th>Latency</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashboard-recent-tx">
+                    <tr class="empty-row">
+                      <td colspan="4">No transactions yet</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ─── MTI CONFIGURATION ──────────────────────────── -->
+      <section class="page" id="page-mti">
+
+        <div class="page-header">
+          <h1>MTI Configuration</h1>
+          <p>Define message type identifiers and their response mappings</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <path d="M1 4h14M1 8h8M1 12h5" />
+                <circle cx="13" cy="11" r="2.5" />
+              </svg>
+              Message Type Identifier
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="form-grid cols-2">
+              <div class="form-group">
+                <label for="mti"
+                  title="4-digit ISO 8583 MTI. BRD JSON uses the same mti at the root of messageTypes[].">Request
+                  MTI</label>
+                <input id="mti" type="text" list="mtiOptions" placeholder="e.g. 0100" maxlength="4" />
+                <datalist id="mtiOptions">
+                  <option value="0100">0100 – Authorization Request</option>
+                  <option value="0200">0200 – Financial Request</option>
+                  <option value="0400">0400 – Reversal Request</option>
+                  <option value="0420">0420 – Reversal Advice</option>
+                  <option value="0800">0800 – Network Management Request</option>
+                  <option value="0820">0820 – Network Management Advice</option>
+                </datalist>
+                <span class="help-text">4-digit ISO 8583 message type (e.g. 0100 = Authorization Request)</span>
+              </div>
+              <div class="form-group">
+                <label for="responseMti">Response MTI</label>
+                <input id="responseMti" type="text" list="responseMtiOptions" placeholder="e.g. 0110" />
+                <datalist id="responseMtiOptions">
+                  <option value="0110">0110 – Authorization Response</option>
+                  <option value="0210">0210 – Financial Response</option>
+                  <option value="0410">0410 – Reversal Response</option>
+                  <option value="0430">0430 – Reversal Advice Response</option>
+                  <option value="0810">0810 – Network Mgmt Response</option>
+                  <option value="0830">0830 – Network Advice Response</option>
+                </datalist>
+                <span class="help-text">Expected response message type from the simulator</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-secondary" onclick="loadRules(); loadConfig();">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 8A7 7 0 1 0 8 1" />
+                <path d="M1 1v4h4" />
+              </svg>
+              Load Config
+            </button>
+            <button class="btn btn-primary" id="btnSaveMti" onclick="saveConfig()">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 3H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zM5 2v4h6V2" />
+                <path d="M4 9h8" />
+              </svg>
+              Save Configuration
+            </button>
+          </div>
+        </div>
+
+        <div id="configResult" class="code-block" style="margin-top:16px"></div>
+        <div id="configLoadState" class="config-load-state" aria-live="polite"></div>
+
+      </section>
+
+      <!-- ─── BITMAP EDITOR ──────────────────────────────── -->
+      <section class="page" id="page-bitmap">
+
+        <div class="page-header">
+          <h1>Bitmap Editor</h1>
+          <p>Select active data elements for request and response bitmaps (DE 2–128)</p>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 5v6M5 8h6" />
+              </svg>
+              Options
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="checkbox-group">
+              <input type="checkbox" id="secondaryBitmap" />
+              <label class="checkbox-label" for="secondaryBitmap"
+                title="BRD requestConfig.secondaryBitmap — required when DE 65–128 are used">Enable Secondary Bitmap (Bit
+                1 = 1)</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Bitmap -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">
+              <span class="scope-tag req">REQ</span>
+              Request Bitmap
+            </span>
+            <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">DE 2 – 128</span>
+          </div>
+          <div class="card-body">
+            <div class="bitmap-panel">
+              <div class="bitmap-panel-title"><span class="dot"></span>Request Data Elements</div>
+              <div id="requestBitmapGrid" class="bitmap-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Response Bitmap -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <span class="card-title">
+              <span class="scope-tag res">RES</span>
+              Response Bitmap
+            </span>
+            <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">DE 2 – 128</span>
+          </div>
+          <div class="card-body">
+            <div class="bitmap-panel res">
+              <div class="bitmap-panel-title res"><span class="dot"></span>Response Data Elements</div>
+              <div id="responseBitmapGrid" class="bitmap-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary" id="selectAllBtn" type="button">Select All</button>
+            <button class="btn btn-secondary" id="clearAllBtn" type="button">Deselect All</button>
+          </div>
+          <button class="btn btn-primary" id="btnSaveBitmap" onclick="saveBitmap()">
+            <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 3H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zM5 2v4h6V2" />
+            </svg>
+            Save Bitmap
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ─── FIELD CONFIGURATION ────────────────────────── -->
+      <section class="page" id="page-fields">
+
+        <div class="page-header">
+          <h1>Field Configuration</h1>
+          <p>Configure data element definitions for MTI: <strong id="mtiDisplayFields"
+              style="color:var(--accent);font-family:var(--font-mono)">—</strong></p>
+        </div>
+
+        <!-- Field Table -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <path d="M1 4h14M1 8h14M1 12h10" />
+              </svg>
+              Configured Fields
+            </span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrapper" style="border:none;border-radius:0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Scope</th>
+                    <th>DE #</th>
+                    <th>Type</th>
+                    <th>Mandatory</th>
+                    <th>Length</th>
+                    <th>Mode</th>
+                    <th>Value</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="fieldTableBody">
+                  <tr class="empty-row">
+                    <td colspan="8">Load a configuration to see fields</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Field Form -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 5v6M5 8h6" />
+              </svg>
+              Add / Update Field
+            </span>
+            <span class="help-text" style="margin:0">Select bitmap bits for the field before saving</span>
+          </div>
+          <div class="card-body">
+            <div class="form-grid cols-3">
+              <div class="form-group">
+                <label for="fieldNumber">Field Number (DE #)</label>
+                <input id="fieldNumber" type="number" min="2" max="128" placeholder="e.g. 2" />
+              </div>
+              <div class="form-group">
+                <label for="fieldType">Type</label>
+                <select id="fieldType">
+                  <option value="NUMERIC">NUMERIC</option>
+                  <option value="PAN">PAN</option>
+                  <option value="DATETIME">DATETIME</option>
+                  <option value="ALPHA">ALPHA</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fieldLength">Length</label>
+                <input id="fieldLength" type="number" min="0" placeholder="e.g. 16" />
+              </div>
+              <div class="form-group">
+                <label for="fieldMode"
+                  title="Maps to BRD fieldConfigs[].valueType (alias: mode) — STATIC, DYNAMIC, FROM_REQUEST, TEMPLATE">Mode</label>
+                <select id="fieldMode" onchange="updateFieldValueInput()">
+                  <option value="STATIC">STATIC</option>
+                  <option value="DYNAMIC">DYNAMIC</option>
+                  <option value="FROM_REQUEST">FROM_REQUEST</option>
+                  <option value="TEMPLATE">TEMPLATE</option>
+                </select>
+              </div>
+              <div class="form-group" id="fieldValueGroup">
+                <label for="fieldValue">Value</label>
+                <input id="fieldValue" type="text" placeholder="e.g. 00" />
+              </div>
+              <div class="form-group" id="dynamicValueGroup" style="display:none">
+                <label for="fieldDynamicValue">Dynamic Type</label>
+                <select id="fieldDynamicValue">
+                  <option value="DATE">DATE (MMdd)</option>
+                  <option value="TIME">TIME (HHmmss)</option>
+                  <option value="DATETIME">DATETIME (MMddHHmmss)</option>
+                  <option value="STAN">STAN (6 digits)</option>
+                  <option value="RRN">RRN (12 digits)</option>
+                </select>
+              </div>
+              <div class="form-group" id="fromRequestGroup" style="display:none">
+                <label for="fieldFromRequest">Source Field Number</label>
+                <input id="fieldFromRequest" type="number" min="2" max="128" placeholder="e.g. 11" />
+              </div>
+              <div class="form-group" id="templateGroup" style="display:none">
+                <label for="fieldTemplate"
+                  title="BRD template field; tokens like ${DATE}, ${STAN}, ${PAN} per engine rules">Template
+                  Pattern</label>
+                <input id="fieldTemplate" type="text" placeholder="e.g. TXN-${DATE}-${STAN}" />
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('fieldTemplate').value='TXN-${DATE}-${STAN}'">TXN-${DATE}-${STAN}</button>
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('fieldTemplate').value='AUTH-${DATETIME}-${RRN}'">AUTH-${DATETIME}-${RRN}</button>
+                  <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('fieldTemplate').value='${PAN}|${AMOUNT}'">${PAN}|${AMOUNT}</button>
+                </div>
+              </div>
+              <div class="form-group" style="justify-content:flex-end;padding-top:18px">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="fieldMandatory" />
+                  <label class="checkbox-label" for="fieldMandatory">Mandatory Field</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary" onclick="addField()">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 5v6M5 8h6" />
+              </svg>
+              Add / Save Field
+            </button>
+          </div>
+        </div>
+
+        <div id="fieldResult" class="code-block" style="margin-top:16px"></div>
+
+      </section>
+
+      <!-- ─── RULE ENGINE ────────────────────────────────── -->
+      <section class="page" id="page-rules">
+
+        <div class="page-header">
+          <h1>Rule Engine</h1>
+          <p>Define conditional response rules based on field values</p>
+        </div>
+
+        <!-- Rule Table -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <path d="M1 2h14v2H1zM3 7h10M5 11h6" />
+              </svg>
+              Active Rules
+            </span>
+            <button class="btn btn-secondary btn-sm" onclick="loadRules()">
+              <svg viewBox="0 0 16 16" width="12" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 8A7 7 0 1 0 8 1" />
+                <path d="M1 1v4h4" />
+              </svg>
+              Refresh
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrapper" style="border:none;border-radius:0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rule ID</th>
+                    <th>Logic</th>
+                    <th>Conditions</th>
+                    <th>Response Code</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ruleTableBody">
+                  <tr class="empty-row">
+                    <td colspan="5">No rules configured for current MTI</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Rule Form -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 5v6M5 8h6" />
+              </svg>
+              Add New Rule
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Conditions</label>
+              <div id="ruleConditionsContainer"></div>
+              <button class="btn btn-secondary btn-sm" type="button" onclick="addRuleConditionRow()"
+                style="margin-top:8px">
+                + Add Condition
+              </button>
+            </div>
+
+            <div class="form-grid cols-4">
+              <div class="form-group">
+                <label for="ruleLogic">Logic</label>
+                <select id="ruleLogic">
+                  <option value="AND">AND</option>
+                  <option value="OR">OR</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="ruleResponse">Response Code</label>
+                <input id="ruleResponse" type="text" placeholder="e.g. 05" maxlength="2" />
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary" onclick="addRule()">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 5v6M5 8h6" />
+              </svg>
+              Add Rule
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ─── SCENARIO ───────────────────────────────────── -->
+      <section class="page" id="page-scenario">
+
+        <div class="page-header">
+          <h1>Scenario Configuration</h1>
+          <p>Simulate real-world conditions such as delays and timeouts</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <circle cx="8" cy="8" r="7" />
+                <path d="M8 4v4l3 2" />
+              </svg>
+              Scenario Type
+            </span>
+          </div>
+          <div class="card-body">
+
+            <div class="scenario-options" style="margin-bottom:20px">
+              <div class="scenario-option active" data-type="NONE">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M8 12l3 3 5-5" />
+                </svg>
+                <span class="scenario-option-label">NONE</span>
+                <span style="font-size:10px;color:var(--text-muted);text-align:center">Normal operation</span>
+              </div>
+              <div class="scenario-option" data-type="DELAY">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                <span class="scenario-option-label">DELAY</span>
+                <span style="font-size:10px;color:var(--text-muted);text-align:center">Inject response delay</span>
+              </div>
+              <div class="scenario-option" data-type="TIMEOUT">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 8v4M12 16h.01" />
+                </svg>
+                <span class="scenario-option-label">TIMEOUT</span>
+                <span style="font-size:10px;color:var(--text-muted);text-align:center">Simulate no response</span>
+              </div>
+            </div>
+
+            <div class="form-grid cols-2">
+              <div class="form-group">
+                <label for="scenarioDelay">Delay Duration (ms)</label>
+                <input id="scenarioDelay" type="number" min="0" placeholder="e.g. 2000" disabled style="opacity:0.4" />
+                <span class="help-text">Only applicable when Scenario Type = DELAY</span>
+              </div>
+            </div>
+
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary" id="btnSaveScenario" onclick="saveScenario()">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 3H3a1 1 0 00-1 1v8a1 1 0 001 1h10a1 1 0 001-1V4a1 1 0 00-1-1zM5 2v4h6V2" />
+              </svg>
+              Save Scenario
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ─── SIMULATOR ──────────────────────────────────── -->
+      <section class="page" id="page-simulator">
+
+        <div class="page-header">
+          <h1>Transaction Simulator</h1>
+          <p>Manually build and send ISO 8583 transactions for testing</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+          <!-- Builder -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round">
+                  <path d="M2 3l12 5-12 5V9l8-1-8-1V3z" />
+                </svg>
+                Request Builder
+              </span>
+            </div>
+            <div class="card-body">
+              <div class="form-group" style="margin-bottom:16px">
+                <label for="txMti">Message Type (MTI)</label>
+                <input id="txMti" type="text" placeholder="e.g. 0100" maxlength="4" />
+              </div>
+
+              <div class="checkbox-group" style="margin-bottom:12px"
+                title="When checked, each field value is sent as hex (even length) and written as binary to the ISO message (FR-2)">
+                <input type="checkbox" id="txHexFields" />
+                <label class="checkbox-label" for="txHexFields">Hex field values (binary DE payload)</label>
+              </div>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <span
+                  style="font-size:11px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted)">Request
+                  Fields</span>
+                <button class="btn btn-secondary btn-sm" onclick="addTxField()">
+                  <svg viewBox="0 0 16 16" width="12" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round">
+                    <path d="M8 3v10M3 8h10" />
+                  </svg>
+                  Add Field
+                </button>
+              </div>
+
+              <div id="txFieldsContainer"
+                style="border:1px solid var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden;min-height:60px">
+                <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;font-style:italic">
+                  Click "Add Field" to add request data elements
+                </div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-primary" id="btnSendTx" onclick="sendTransaction()">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round">
+                  <path d="M2 3l12 5-12 5V9l8-1-8-1V3z" />
+                </svg>
+                Send Transaction
+              </button>
+            </div>
+          </div>
+
+          <!-- Response -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round">
+                  <path d="M1 8h10M7 4l4 4-4 4" />
+                </svg>
+                Response Payload
+              </span>
+            </div>
+            <div class="card-body" style="height:calc(100% - 52px)">
+              <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnRespHexToggle"
+                  title="Toggle response field display: ASCII vs hex">Response: show hex</button>
+              </div>
+              <div class="code-block" id="txResult" style="min-height:240px"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ─── MTI PROFILES ────────────────────────────────── -->
+      <section class="page" id="page-profiles">
+
+        <div class="page-header">
+          <h1>MTI Profiles</h1>
+          <p>Profile-based MTI configuration — each profile pairs a request MTI with a response MTI and describes both sides completely</p>
+        </div>
+
+        <!-- Profile Overview Grid -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <rect x="1" y="1" width="14" height="4" rx="1"/>
+                <rect x="1" y="7" width="14" height="4" rx="1"/>
+                <path d="M1 13h6"/>
+              </svg>
+              Active Profiles
+            </span>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input id="remoteServerUrl" type="text" placeholder="Remote Server (e.g. http://localhost:8081)" class="form-control form-control-sm" style="width: 280px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text-color);" />
+              <button class="btn btn-primary btn-sm" onclick="syncProfilesFromServer()">
+                <svg viewBox="0 0 16 16" width="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 1v14M1 8h14M3 3l10 10" />
+                </svg>
+                Sync
+              </button>
+              <button class="btn btn-secondary btn-sm" onclick="loadProfiles()">
+                <svg viewBox="0 0 16 16" width="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 8A7 7 0 1 0 8 1"/><path d="M1 1v4h4"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div id="profilesGrid" style="padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+              <div style="color:var(--text-muted);font-style:italic;padding:16px">Loading profiles…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Detail + Editor -->
+        <div id="profileDetailSection" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+
+            <!-- Request Side -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">
+                  <span class="scope-tag req">REQ</span>
+                  Request Side
+                </span>
+                <span class="mono" style="font-size:11px;color:var(--text-muted)" id="profileReqMtiLabel">—</span>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom:12px">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Mandatory Bits</div>
+                  <div id="profileMandatoryBits" class="mono" style="font-size:12px;color:var(--accent)">—</div>
+                </div>
+                <div style="margin-bottom:12px">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Optional Bits</div>
+                  <div id="profileOptionalBits" class="mono" style="font-size:12px;color:var(--info)">—</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Request Fields</div>
+                  <div id="profileRequestFieldsList" style="font-size:12px"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Response Side -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">
+                  <span class="scope-tag res">RES</span>
+                  Response Side
+                </span>
+                <span class="mono" style="font-size:11px;color:var(--text-muted)" id="profileResMtiLabel">—</span>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom:12px">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Response Bits</div>
+                  <div id="profileResponseBits" class="mono" style="font-size:12px;color:var(--success)">—</div>
+                </div>
+                <div style="margin-bottom:12px">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Echo Fields (FROM_REQUEST)</div>
+                  <div id="profileEchoFields" class="mono" style="font-size:12px;color:var(--warn)">—</div>
+                </div>
+                <div style="margin-bottom:12px">
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Static Response Fields</div>
+                  <div id="profileStaticFields" style="font-size:12px"></div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px">Dynamic Response Fields</div>
+                  <div id="profileDynamicFields" style="font-size:12px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rules -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <span class="card-title">
+                <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                  <path d="M1 2h14v2H1zM3 7h10M5 11h6"/>
+                </svg>
+                Rules &amp; Decline Logic
+              </span>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-wrapper" style="border:none;border-radius:0">
+                <table class="data-table">
+                  <thead><tr><th>Logic</th><th>Conditions</th><th>Response Code</th></tr></thead>
+                  <tbody id="profileRulesBody">
+                    <tr class="empty-row"><td colspan="3">No rules configured</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile-Driven Client Request Builder -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M2 3l12 5-12 5V9l8-1-8-1V3z"/>
+              </svg>
+              Profile-Driven Client Request Builder
+            </span>
+            <span style="font-size:11px;color:var(--text-muted)">Profiles auto-fill fields · CLIENT mode sends to remote server</span>
+          </div>
+          <div class="card-body">
+            <div class="form-grid cols-2" style="margin-bottom:16px">
+              <div class="form-group">
+                <label for="profileBuilderMti">Select Request MTI</label>
+                <select id="profileBuilderMti" onchange="onProfileBuilderMtiChange()">
+                  <option value="">— Select MTI —</option>
+                  <option value="0100">0100 – Authorization Request</option>
+                  <option value="0200">0200 – Financial (Purchase)</option>
+                  <option value="0220">0220 – Financial Advice</option>
+                  <option value="0400">0400 – Reversal Request</option>
+                  <option value="0420">0420 – Reversal Advice</option>
+                  <option value="0600">0600 – Administrative Request</option>
+                  <option value="0800">0800 – Network Management</option>
+                  <option value="0820">0820 – Network Advice</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expected Response MTI</label>
+                <div class="mono" id="profileBuilderResponseMti" style="padding:8px 10px;background:var(--bg-input);border:1px solid var(--border-default);border-radius:var(--radius-sm);font-size:13px;color:var(--text-muted)">—</div>
+              </div>
+            </div>
+
+            <div id="profileBuilderProfileInfo" style="display:none;margin-bottom:16px;padding:12px;background:var(--bg-input);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)">
+              <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px" id="profileBuilderProfileName"></div>
+              <div style="font-size:11px;color:var(--text-muted)" id="profileBuilderProfileMandatoryBits"></div>
+              <div style="font-size:11px;color:var(--info);margin-top:2px" id="profileBuilderProfileOptionalBits"></div>
+            </div>
+
+            <div style="font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px">Profile-Driven Fields</div>
+            <div id="profileBuilderFieldsContainer" style="border:1px solid var(--border-subtle);border-radius:var(--radius-sm);overflow:hidden;min-height:60px">
+              <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;font-style:italic">Select an MTI to load profile fields</div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-primary" id="btnSendProfileTx" onclick="sendProfileTransaction()" disabled>
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M2 3l12 5-12 5V9l8-1-8-1V3z"/>
+              </svg>
+              Send Profile Request
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile Request Result -->
+        <div class="code-block" id="profileTxResult" style="margin-top:16px"></div>
+
+      </section>
+
+      <section class="page" id="page-monitor">
+
+        <div class="page-header">
+          <h1>Transaction Monitor</h1>
+          <p>Live feed of all messages processed by the simulator — auto-refreshes every 2s</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">
+              <svg viewBox="0 0 16 16" width="14" fill="none" stroke="currentColor" stroke-width="1.5"
+                stroke-linecap="round">
+                <rect x="1" y="2" width="14" height="10" rx="1" />
+                <path d="M5 14h6M8 12v2" />
+              </svg>
+              Transaction Log
+              <span class="badge" id="txCount">LIVE</span>
+            </span>
+            <div
+              style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);font-family:var(--font-mono)">
+              <span class="dot"
+                style="width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 6px var(--success);display:inline-block;animation:pulse 2s infinite"></span>
+              Live
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-wrapper" style="border:none;border-radius:0">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>MTI</th>
+                    <th>Response Code</th>
+                    <th>Processing Time</th>
+                  </tr>
+                </thead>
+                <tbody id="txMonitorBody">
+                  <tr class="empty-row">
+                    <td colspan="4">Waiting for transactions…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="monitoringSection">
+          <h2>System Monitoring</h2>
+
+          <div class="tabs">
+            <button class="monitor-tab-btn active" onclick="showTab('statusTab', this)">Status</button>
+            <button class="monitor-tab-btn" onclick="showTab('connectionsTab', this)">Connections</button>
+            <button class="monitor-tab-btn" onclick="showTab('logsTab', this)">Logs</button>
+          </div>
+
+          <div id="statusTab" class="tabContent"></div>
+          <div id="connectionsTab" class="tabContent" style="display:none;"></div>
+          <div id="logsTab" class="tabContent" style="display:none;"></div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

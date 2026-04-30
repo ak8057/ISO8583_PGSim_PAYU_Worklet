@@ -1,0 +1,154 @@
+[
+  {
+    "mti": "0100",
+    "responseMti": "0110",
+
+    "bitmap": {
+      "requestBits": [2, 3, 4, 11],
+      "responseBits": [7, 11, 12, 37, 38, 39],
+      "secondaryBitmap": false
+    },
+
+    "requestFields": [
+      { "field": 2, "mandatory": true, "length": 16, "type": "PAN" },
+      { "field": 3, "mandatory": true, "length": 6, "type": "NUMERIC" },
+      { "field": 4, "mandatory": true, "length": 12, "type": "NUMERIC" },
+      { "field": 11, "mandatory": true, "length": 6, "type": "NUMERIC" }
+    ],
+
+    "responseFields": [
+  { "field": 7, "mode": "DYNAMIC", "value": "DATETIME" },
+  { "field": 12, "mode": "DYNAMIC", "value": "TIME" },
+  { "field": 37, "mode": "DYNAMIC", "value": "RRN" },
+  { "field": 38, "mode": "STATIC", "value": "AUTH01" },
+  { "field": 39, "mode": "STATIC", "value": "00" }
+],
+
+    "rules": [
+      { "field": 4, "operator": ">", "value": "50000", "responseCode": "05" },
+      { "field": 4, "operator": ">", "value": "10000", "responseCode": "51" }
+    ],
+
+    "scenario": { "type": "DELAY", "delay": 1000 }
+  },
+
+  {
+    "mti": "0200",
+    "responseMti": "0210",
+    "requestBits": [2, 3, 4, 7, 11],
+
+    "bitmap": {
+      "requestBits": [],
+      "responseBits": [7, 11, 12, 37, 38, 39],
+      "secondaryBitmap": false
+    },
+
+    "fieldConfigs": [
+      { "field": 2, "mandatory": true, "length": 16, "mode": "STATIC", "value": "5123456789012345" },
+      { "field": 3, "mandatory": true, "length": 6, "mode": "STATIC", "value": "000000" },
+      { "field": 4, "mandatory": true, "length": 12, "mode": "STATIC", "value": "000000001000" },
+      { "field": 7, "mandatory": true, "length": 10, "mode": "DYNAMIC", "value": "DATETIME" },
+      { "field": 11, "mandatory": true, "length": 6, "mode": "TEMPLATE", "value": "12${TIME}" }
+    ],
+
+    "responseFields": [
+  { "field": 7, "mode": "DYNAMIC", "value": "DATETIME" },
+  { "field": 12, "mode": "DYNAMIC", "value": "TIME" },
+  { "field": 37, "mode": "DYNAMIC", "value": "RRN" },
+  { "field": 38, "mode": "STATIC", "value": "FIN123" },
+  { "field": 39, "mode": "STATIC", "value": "00" }
+],
+
+    "rules": [
+      { "field": 4, "operator": ">", "value": "20000", "responseCode": "05" }
+    ],
+
+    "scenario": { "type": "NONE" }
+  },
+
+  {
+    "mti": "0400",
+    "responseMti": "0410",
+
+    "bitmap": {
+      "requestBits": [11],
+      "responseBits": [11, 39],
+      "secondaryBitmap": false
+    },
+
+    "requestFields": [{ "field": 11, "mandatory": true, "length": 6 }],
+
+    "responseFields": [{ "field": 39, "mode": "STATIC", "value": "00" }],
+
+    "scenario": { "type": "NONE" }
+  },
+
+  {
+    "mti": "0420",
+    "responseMti": "0430",
+
+    "bitmap": {
+      "requestBits": [11],
+      "responseBits": [11, 39],
+      "secondaryBitmap": false
+    },
+
+    "requestFields": [{ "field": 11, "mandatory": true, "length": 6 }],
+
+    "responseFields": [{ "field": 39, "mode": "STATIC", "value": "00" }],
+
+    "scenario": { "type": "NONE" }
+  },
+
+  {
+    "mti": "0800",
+    "responseMti": "0810",
+
+    "bitmap": {
+      "requestBits": [7, 11, 70],
+      "responseBits": [7, 11, 12, 39, 70],
+      "secondaryBitmap": true
+    },
+
+    "requestFields": [
+      { "field": 7, "mandatory": true, "length": 10, "type": "DATETIME" },
+      { "field": 11, "mandatory": true, "length": 6, "type": "NUMERIC" },
+      { "field": 70, "mandatory": true, "length": 3, "type": "NUMERIC" }
+    ],
+
+    "responseFields": [
+      { "field": 7, "mode": "DYNAMIC", "value": "DATETIME" },
+      { "field": 12, "mode": "DYNAMIC", "value": "TIME" },
+      { "field": 39, "mode": "STATIC", "value": "00" },
+      { "field": 70, "mode": "FROM_REQUEST", "value": "70" }
+    ],
+
+    "scenario": { "type": "NONE" }
+  },
+
+  {
+    "mti": "0820",
+    "responseMti": "0830",
+
+    "bitmap": {
+      "requestBits": [7, 11, 70],
+      "responseBits": [7, 11, 12, 39, 70],
+      "secondaryBitmap": true
+    },
+
+    "requestFields": [
+      { "field": 7, "mandatory": true, "length": 10, "type": "DATETIME" },
+      { "field": 11, "mandatory": true, "length": 6, "type": "NUMERIC" },
+      { "field": 70, "mandatory": true, "length": 3, "type": "NUMERIC" }
+    ],
+
+    "responseFields": [
+      { "field": 7, "mode": "DYNAMIC", "value": "DATETIME" },
+      { "field": 12, "mode": "DYNAMIC", "value": "TIME" },
+      { "field": 39, "mode": "STATIC", "value": "00" },
+      { "field": 70, "mode": "FROM_REQUEST", "value": "70" }
+    ],
+
+    "scenario": { "type": "NONE" }
+  }
+]

@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "simulator.tcp.port",
+    "type": "java.lang.String",
+    "description": "A description for 'simulator.tcp.port'"
+  },
+  {
+    "name": "simulator.timeout",
+    "type": "java.lang.String",
+    "description": "A description for 'simulator.timeout'"
+  },
+  {
+    "name": "pgsim.connection.timeout",
+    "type": "java.lang.String",
+    "description": "A description for 'pgsim.connection.timeout'"
+  }
+]}
