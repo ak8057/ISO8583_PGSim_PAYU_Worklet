@@ -290,7 +290,7 @@ pgsim_ISO8583-mainV3/
 
 ```bash
 git clone https://github.com/ak8057/ISO8583_PGSim_PAYU_Worklet.git
-cd pgsim_ISO8583-mainV3
+cd ISO8583_PGSim_PAYU_Worklet
 ```
 
 2) Start both instances
