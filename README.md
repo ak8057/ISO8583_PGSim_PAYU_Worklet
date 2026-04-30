@@ -289,7 +289,7 @@ pgsim_ISO8583-mainV3/
 1) Clone repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/ak8057/ISO8583_PGSim_PAYU_Worklet.git
 cd pgsim_ISO8583-mainV3
 ```
 
